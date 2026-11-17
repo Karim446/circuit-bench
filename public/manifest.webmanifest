@@ -2,7 +2,7 @@
  "name": "Circuit Bench",
  "short_name": "Circuit Bench",
  "description": "Circuit troubleshooting, Python and Linux practice for hardware test interviews.",
- "start_url": "./#practice",
+ "start_url": "./#home",
  "scope": "./",
  "display": "standalone",
  "background_color": "#F6F8FA",

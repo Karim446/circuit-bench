@@ -1,35 +1,43 @@
 # Deploying Circuit Bench (Cloudflare Pages + D1)
 
-Folder layout:
+## Normal use: push and it deploys
 
-    circuit-bench/
-      wrangler.toml          Pages config + D1 binding
-      functions/api/sync.js  the sync API (runs on Cloudflare, same origin as the site)
-      public/                everything that gets served (index.html, sw.js, py-worker.js, manifest, icons)
+    git add -A
+    git commit -m "what changed"
+    git push
 
-## One-time setup (PowerShell, inside the circuit-bench folder)
+GitHub Actions (`.github/workflows/deploy.yml`) runs the tests, then `wrangler pages deploy`.
+Watch it under the repo's **Actions** tab; a red X means the tests failed and nothing was deployed.
 
-1. Create the database:
+## One-time setup
 
-       npx wrangler d1 create circuit-bench
+1. **Database id.** Put your real D1 `database_id` in `wrangler.toml` (the same one you already
+   use locally). To look it up: `npx wrangler d1 list`. First time ever: `npx wrangler d1 create circuit-bench`.
+   The id is not a password; it is safe to commit.
 
-   Copy the `database_id` it prints into `wrangler.toml`.
+2. **Cloudflare API token.** Cloudflare dashboard → My Profile → API Tokens → Create Token →
+   Custom token with:
+   - Account → Cloudflare Pages → Edit
+   - Account → D1 → Edit
+   Copy the token (shown once).
 
-2. Deploy:
+3. **Account id.** `npx wrangler whoami` prints it (also on the dashboard's Workers & Pages overview).
 
-       npx wrangler pages deploy
+4. **GitHub secrets.** Repo → Settings → Secrets and variables → Actions → New repository secret:
+   - `CLOUDFLARE_API_TOKEN` = the token from step 2
+   - `CLOUDFLARE_ACCOUNT_ID` = the id from step 3
 
-   (`wrangler.toml` tells it the project name, that `public` is the site, and to bind the database as `DB`.
-   The table is created automatically on the first sync.)
+`name` in `wrangler.toml` must match your Pages project name, so the Action updates the existing
+site (same address, same database) instead of creating a new one.
 
-If your Pages project has a different name, change `name` in `wrangler.toml` to match.
+## Deploying by hand (still works)
 
-## Every update after that
-
-       npx wrangler pages deploy
+    npx wrangler pages deploy
 
 ## Notes
 
-- Sync and offline mode need https, so test them on the deployed site, not by opening the file locally.
-- If you'd rather click than type: Pages project → Settings → Bindings → add a D1 binding named `DB`.
-- D1 free tier: 5 million reads and 100,000 writes per day. Sync batches changes, so normal use is a few hundred writes a day at most.
+- Sync and offline mode need https, so test them on the deployed site or with `npx wrangler pages dev`.
+- The service worker fetches fresh files whenever you are online, so a deploy shows up on the next
+  reload. No version number to bump.
+- D1 free tier: 5 million reads and 100,000 writes per day. Sync batches changes, so normal use is
+  a few hundred writes a day at most.
