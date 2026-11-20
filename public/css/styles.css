@@ -365,3 +365,12 @@ svg text.rg-l{font-size:12px;text-anchor:middle;fill:var(--ink2)}
 @media (max-width:700px){.top{flex-wrap:wrap;height:auto;row-gap:0;padding-top:8px}.tabs{order:3;flex:0 0 100%;height:42px}.wb.full{top:96px}}
 /* #home and #cheat are also element ids; stop the browser from scrolling them under the sticky header */
 #home,#cheat,#card,#lesson{scroll-margin-top:240px}
+/* recruiter focus */
+.tgrp{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin:12px 0 2px}
+.tgrp:first-child{margin-top:0}
+.hfocus{border-color:var(--ink);border-width:1.5px}
+.fbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pycode{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-size:14px;line-height:1.5;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;white-space:pre;margin:8px 0}
+.asklist{padding-left:22px;display:flex;flex-direction:column;gap:12px}
+.asklist li b{display:block;font-weight:600}
+.asklist .note{display:block;margin-top:2px}

@@ -8,7 +8,7 @@ const E12=[1,1.2,1.5,1.8,2.2,2.7,3.3,3.9,4.7,5.6,6.8,8.2];
 function res(lo,hi){const o=[];for(let e=0;e<=6;e++)for(const m of E12){const v=+(m*10**e).toPrecision(3);if(v>=lo&&v<=hi)o.push(v);}return o.length?pick(o):nearE12((lo+hi)/2);}
 const sig=(x,n=3)=>+(+x).toPrecision(n);
 // Answers as shown to the user: whole numbers in full (ADC codes, register values), otherwise 3 significant figures.
-const showVal=v=>Number.isInteger(v)?v:sig(v,3);
+const showVal=(v,a)=>{if(Number.isInteger(v))return v;if(a&&a.abs>0&&!a.tol)return +v.toFixed(Math.max(0,Math.ceil(-Math.log10(a.abs))));return sig(v,3);};
 function eng(v,unit,n=3){if(!isFinite(v)||Math.abs(v)<1e-15)return `0 ${unit}`;const P={'-12':'p','-9':'n','-6':'µ','-3':'m','0':'','3':'k','6':'M','9':'G'};let e=Math.floor(Math.log10(Math.abs(v))/3)*3;e=Math.max(-12,Math.min(9,e));let m=sig(v/10**e,n);if(Math.abs(m)>=1000&&e<9){e+=3;m=sig(v/10**e,n);}return `${m} ${P[e]}${unit}`;}
 const ohm=v=>eng(v,'Ω');
 const f2=(v,d=2)=>String(+v.toFixed(d));
@@ -32,7 +32,7 @@ const BODIES={
 };
 
 /* ---------- subscripts (V_in, V_out, …) ---------- */
-const SUBTOK=(svg)=>new RegExp(`\\b(?:(V)(in|out|th|ref|cc|DD|CE|BE|GS|DS|IH|IL|OH|OL|rms|pk|pp|avg|z|f|s|c|d)|(R)(in|IN|out|th|L|B|F|G|S|PU|PD|DS${svg?'|C':''})|(I)(in|out|c|b|e|E|L|z|ph|d|sink)|(f)(c)|(X)(c|C|L)|([VRI])_([A-Za-z]+))(\\((?:th|on|sat|max|min)\\))?(?![A-Za-z0-9])`,'g');
+const SUBTOK=(svg)=>new RegExp(`\\b(?:(V)(in|out|th|ref|cc|DD|CE|BE|GS|DS|IH|IL|OH|OL|rms|pk|pp|avg|z|f|s|c|d)|(R)(in|IN|out|th|L|B|F|G|S|PU|PD|DS${svg?'|C':''})|(I)(in|out|c|b|e|E|L|z|ph|d|sink)|(f)(c)|(X)(c|C|L)|([VRI])_([A-Za-z]+))(\\((?:th|on|sat|max|min)\\))?(?![A-Za-z0-9]|-\\d)`,'g');
 const SUB_H=SUBTOK(false),SUB_S=SUBTOK(true);
 function subParts(m){const a=[...m];for(let i=1;i<=11;i+=2)if(a[i])return[a[i],a[i+1]+(a[13]||'')];return[m[0],''];}
 function svgSub(t){t=String(t);let out='',last=0,open=0;SUB_S.lastIndex=0;let m;

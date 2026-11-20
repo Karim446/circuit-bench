@@ -14,9 +14,11 @@ Plain HTML, CSS and JavaScript. There is no build step: what is in `public/` is 
         core.js             helpers, number formatting, schematic drawing (Sch), topic list
         topics/*.js         question generators, one file per topic
         topics/interview.js logic, serial protocols, ADC, embedded C, Ethernet + concept question bank
+        topics/focus.js     recruiter-focus track: differential, common mode, analog, optics, basic Python (+ lessons)
         lessons.js          Learn tab lessons        lessons-interview.js  lessons for the newer topics
         cheatsheet.js       cheatsheet cards + copy/save/share of schematics
         content.js          extra cheat cards, flashcards, explain-out-loud prompts
+        content-focus.js    recruiter-focus cheat cards, flashcards, explain prompts, questions to ask
         sim-dc.js           netlist extraction + DC solver      sim-transient.js  transient analysis
         widgets.js          plots and interactive lesson widgets
         calculator.js  whiteboard.js                            the side tools

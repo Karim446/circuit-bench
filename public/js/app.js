@@ -12,8 +12,8 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');c
 
 /* ---------- practice ---------- */
 function renderSide(){
- $('topicList').innerHTML=TOPICS.map(t=>{const st=stats[t.id]||{a:0,c:0},pct=st.a?Math.round(st.c/st.a*100):0;
-  return `<label class="topic"><input type="checkbox" data-t="${t.id}" ${prefs.topics.includes(t.id)?'checked':''}><span>${t.name}</span><span class="ct">${st.a?`${st.c}/${st.a}`:''}</span><span class="bar"><i style="width:${pct}%"></i></span></label>`;}).join('');
+ $('topicList').innerHTML=TOPICS.map((t,i)=>{const st=stats[t.id]||{a:0,c:0},pct=st.a?Math.round(st.c/st.a*100):0,gh=i===0&&t.focus?'<div class="tgrp">Recruiter focus</div>':t.focus||!(TOPICS[i-1]||{}).focus?'':'<div class="tgrp">Everything else</div>';
+  return gh+`<label class="topic"><input type="checkbox" data-t="${t.id}" ${prefs.topics.includes(t.id)?'checked':''}><span>${t.name}</span><span class="ct">${st.a?`${st.c}/${st.a}`:''}</span><span class="bar"><i style="width:${pct}%"></i></span></label>`;}).join('');
  $('topicList').querySelectorAll('input').forEach(i=>i.onchange=()=>{const t=i.dataset.t;prefs.topics=i.checked?[...new Set([...prefs.topics,t])]:prefs.topics.filter(x=>x!==t);store.set('bench.prefs',prefs);if(!cur||!prefs.topics.includes(cur.topic))next();});
  $('faultOnly').checked=prefs.faultOnly;$('weakMode').checked=prefs.weak;$('missMode').checked=!!prefs.missMode;const mc=missCount();$('missLbl').textContent=mc?`Revisit my misses (${mc})`:'Revisit my misses';}
 function renderScore(){const acc=session.tried?Math.round(session.first/session.tried*100):0;
@@ -50,7 +50,7 @@ function showHint(){if(!cur||cur.done||cur.hintN>=cur.hints.length)return;const 
 function record(ok){if(cur.recorded)return;cur.recorded=true;const st=stats[cur.topic]||{a:0,c:0};st.a++;session.tried++;
  dayMark();const clean=ok&&!cur.usedHelp;if(clean){st.c++;session.first++;session.streak++;}else session.streak=0;
  const mk=G.find(g=>g.topic===cur.topic&&g===lastGen)?.key;if(mk){const M=stats.miss||(stats.miss={});if(!ok)M[mk]=(M[mk]||0)+1;else if(clean&&M[mk]){M[mk]--;if(!M[mk])delete M[mk];}}stats[cur.topic]=st;store.set('bench.stats',stats);renderScore();renderSide();}
-function fmtAns(a){return `${showVal(a.value)} ${a.unit}`;}
+function fmtAns(a){return `${showVal(a.value,a)} ${a.unit}`;}
 function checkNum(){
  if(cur.done)return;const raw=$('ans').value.trim().replace(',','.').replace(/[^0-9eE+\-.]/g,'');const x=parseFloat(raw);
  if(raw===''||!isFinite(x)){$('err').textContent=`Enter a number in ${cur.answer.unit}.`;return;}
@@ -86,7 +86,7 @@ function askClaude(){const t=claudePrompt(cur);try{navigator.clipboard.writeText
 /* ---------- learn ---------- */
 function renderLearn(id){
  const L=LESSONS.find(l=>l.id===id)||LESSONS[0];
- const dn=prefs.done||[];$('lnav').innerHTML=`<p class="note" style="margin:0 0 10px">${dn.length}/${LESSONS.length} lessons done</p>`+LESSONS.map(l=>`<a href="#learn/${l.id}" class="${l===L?'on':''}">${dn.includes(l.id)?'<span class="done">✓</span> ':''}${l.title}<small>${l.sub}</small></a>`).join('');
+ const dn=prefs.done||[];$('lnav').innerHTML=`<p class="note" style="margin:0 0 10px">${dn.length}/${LESSONS.length} lessons done</p>`+LESSONS.map((l,i)=>{const f=FOCUS.includes(l.id),pf=i>0&&FOCUS.includes(LESSONS[i-1].id);return (i===0&&f?'<div class="lgroup">Recruiter focus</div>':!f&&pf?'<div class="lgroup">Everything else</div>':'')+`<a href="#learn/${l.id}" class="${l===L?'on':''}">${dn.includes(l.id)?'<span class="done">✓</span> ':''}${l.title}<small>${l.sub}</small></a>`;}).join('');
  const m=$('lesson');m.innerHTML=`<h2>${L.title}</h2><p class="lead">${L.lead}</p>${L.sections.map((s,i)=>`<h3>${s.h}</h3>${s.html}${s.w?`<div data-w="${i}"></div>`:''}`).join('')}<div class="tools" style="margin-top:30px"><button class="btn ghost" id="lDone">${dn.includes(L.id)?'✓ Done':'Mark as done'}</button><button class="btn" id="lPractice">Practice ${L.title}</button>${LESSONS.indexOf(L)<LESSONS.length-1?`<a class="btn ghost" style="text-decoration:none" href="#learn/${LESSONS[LESSONS.indexOf(L)+1].id}">Next lesson: ${LESSONS[LESSONS.indexOf(L)+1].title}</a>`:''}</div>`;
  subify(m);m.querySelectorAll('[data-w]').forEach(d=>{d.dataset.name=L.sections[+d.dataset.w].h;mountWidget(d,L.sections[+d.dataset.w].w());});
  $('lDone').onclick=()=>{const d=prefs.done||[];const i=d.indexOf(L.id);if(i<0)d.push(L.id);else d.splice(i,1);prefs.done=d;store.set('bench.prefs',prefs);renderLearn(L.id);};
