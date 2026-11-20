@@ -13,35 +13,12 @@ const CHEAT=[
  ['Op-amps',`<table><tr><td>Inverting</td><td>−RF/RIN</td></tr><tr><td>Non-inverting</td><td>1 + RF/RG</td></tr><tr><td>Follower</td><td>1 (buffer)</td></tr><tr><td>Comparator</td><td>rail by sign of V+ − V−</td></tr><tr><td>TIA</td><td>Vout = I·RF</td></tr></table><ul><li>Feedback ⇒ V− = V+, no input current</li><li>Output never exceeds the rails</li></ul>`],
  ['RC and filters',`<table><tr><td>1τ</td><td>63%</td></tr><tr><td>2.2τ</td><td>90% (10–90% rise time)</td></tr><tr><td>3τ</td><td>95%</td></tr><tr><td>5τ</td><td>99%</td></tr></table><ul><li>τ = RC; Vc = Vs(1 − e^(−t/τ)); t = −τ·ln(1 − x)</li><li>fc = 1/(2πRC); −20 dB/decade above</li><li>DC steady state: cap = open; at a step: uncharged cap = short</li><li>100 nF decoupling at every IC power pin</li></ul>`],
  ['Signals, AC and dB',`<ul><li>Sine: Vrms = Vpk/√2 ≈ 0.707·Vpk; Vpp = 2·Vpk</li><li>PWM 0–V: average D·V, RMS V·√D</li><li>f = 1/T; P = Vrms²/R</li><li>Xc = 1/(2πfC); XL = 2πfL</li></ul><table><tr><th>dB</th><th>Power ×</th><th>Voltage ×</th></tr><tr><td>3</td><td>2</td><td>1.41</td></tr><tr><td>6</td><td>4</td><td>2</td></tr><tr><td>10</td><td>10</td><td>3.16</td></tr><tr><td>20</td><td>100</td><td>10</td></tr></table><ul><li>Power dB = 10·log₁₀; voltage dB = 20·log₁₀</li><li>dBm = 10·log₁₀(P/1 mW); 0 dBm = 1 mW</li><li>Rx = Tx − losses; margin = Rx − sensitivity</li><li>SM ≈ 0.35 dB/km @1310; MM ≈ 3 dB/km @850; connector ≈ 0.5 dB</li></ul>`],
- ['Linux for diagnostics',`<table><tr><td><code>dmesg | grep -i err</code></td><td>kernel errors</td></tr><tr><td><code>journalctl -k -f</code></td><td>follow kernel log</td></tr><tr><td><code>lspci -vv</code>, <code>lsusb</code></td><td>enumerated devices</td></tr><tr><td><code>i2cdetect -y 1</code></td><td>scan I²C bus 1</td></tr><tr><td><code>i2cget -y 1 0x48 0x00</code></td><td>read a register</td></tr><tr><td><code>ethtool eth0</code> / <code>-S</code></td><td>link settings / counters</td></tr><tr><td><code>ip -s link</code></td><td>interfaces and stats</td></tr><tr><td><code>cat /sys/class/net/eth0/carrier</code></td><td>link up (1) or down (0)</td></tr><tr><td><code>grep -c PASS log</code></td><td>count matches</td></tr><tr><td><code>awk '{print $3}'</code></td><td>third column</td></tr><tr><td><code>sort | uniq -c | sort -rn</code></td><td>count and rank</td></tr><tr><td><code>tail -f log</code></td><td>watch a file</td></tr><tr><td><code>watch -n1 cmd</code></td><td>rerun every second</td></tr><tr><td colspan="2" class="note">Practice all of these in the Linux tab.</td></tr><tr><td><code>ps aux | grep py</code></td><td>find a process</td></tr><tr><td><code>chmod +x run.sh</code></td><td>make executable</td></tr></table><pre>import subprocess
-out = subprocess.run(["ethtool", "eth0"],
-    capture_output=True, text=True).stdout</pre>`],
  ['Logic levels',`<table><tr><th></th><th>V_IH</th><th>V_IL</th></tr><tr><td>3.3 V CMOS</td><td>2.31</td><td>0.99</td></tr><tr><td>5 V CMOS</td><td>3.5</td><td>1.5</td></tr><tr><td>TTL-level</td><td>2.0</td><td>0.8</td></tr></table><ul><li>3.3 V → 5 V CMOS: not guaranteed</li><li>5 V → 3.3 V: only if 5 V-tolerant</li><li>Floating input = undefined; add a pull</li></ul>`],
  ['Pull-ups and edges',`<ul><li>Open-drain only pulls low; needs a pull-up</li><li>tr ≈ 2.2·R·C (rise slow, fall fast)</li><li>R ≥ VCC/I_sink; R ≤ tr(max)/(2.2·C)</li><li>Internal pull-ups ≈ 20–50 kΩ: too weak for fast lines</li></ul>`],
  ['Power',`<table><tr><th></th><th>Linear</th><th>Buck</th></tr><tr><td>Heat</td><td>(Vin − Vout)·I</td><td>≈ 5–15% of Pout</td></tr><tr><td>Efficiency</td><td>Vout/Vin</td><td>85–95%</td></tr><tr><td>Noise</td><td>quiet</td><td>switching ripple</td></tr><tr><td>Formula</td><td>Vin ≥ Vout + dropout</td><td>Vout = D·Vin</td></tr></table><ul><li>Iin(buck) = Vout·Iout/(η·Vin)</li><li>Bench supply CC light = current limit hit</li></ul>`],
  ['DMM rules',`<ul><li>V: parallel, powered. A: series, break the circuit</li><li>Ω and continuity: power off, lift a leg</li><li>Diode mode: shows Vf; OL in reverse</li><li>Meter input ≈ 10 MΩ: loads high-Z nodes</li><li>Leads still in the A jack + voltage = blown fuse</li></ul>`],
  ['Scope rules',`<ul><li>Ground clip to circuit ground only (it is earthed)</li><li>Match probe and channel (1× / 10×)</li><li>AC coupling for small ripple on DC</li><li>Unstable trace: fix trigger source and level</li><li>Ringing on edges: shorten the ground lead, check bandwidth</li></ul>`],
  ['Resistor color code',`<table><tr><td>0 black</td><td>1 brown</td><td>2 red</td><td>3 orange</td><td>4 yellow</td></tr><tr><td>5 green</td><td>6 blue</td><td>7 violet</td><td>8 gray</td><td>9 white</td></tr></table><p style="margin:6px 0 0">Band 1, band 2, multiplier (number of zeros), tolerance (gold 5%, silver 10%). Brown-black-red = 1 kΩ; yellow-violet-orange = 47 kΩ.</p><p style="margin:4px 0 0">E12: 10 12 15 18 22 27 33 39 47 56 68 82</p>`],
- ['Python for test scripts',`<pre>counts = {}
-with open("log.txt") as f:
-    for line in f:
-        if "ERROR" in line:
-            port = line.split()[2]
-            counts[port] = counts.get(port, 0) + 1</pre><pre>import re
-m = re.search(r"freq=(\\d+\\.?\\d*)", line)
-if m: freq = float(m.group(1))</pre><pre>import csv
-for row in csv.DictReader(open("meas.csv")):
-    v = float(row["volts"])
-    if not 3.2 &lt;= v &lt;= 3.4: print("FAIL", row)</pre><pre>reg = 0x5A
-bit3 = (reg >> 3) &amp; 1
-reg |= 1 &lt;&lt; 7      # set bit 7
-reg &amp;= ~(1 &lt;&lt; 1)   # clear bit 1</pre><pre>import pyvisa, time
-psu = pyvisa.ResourceManager().open_resource(addr)
-psu.write("VOLT 5"); time.sleep(0.2)
-i = float(psu.query("MEAS:CURR?"))
-assert i &lt; 0.35, f"over-current: {i} A"</pre><pre>import serial
-s = serial.Serial("COM3", 9600, timeout=1)
-s.write(b"PING\\n"); reply = s.readline()</pre>`],
  ['Interview phrasing',`<ul><li>“First I’d predict what this node should read…”</li><li>“That reading fits two faults; I’d separate them by…”</li><li>“Before blaming the circuit I’d check the supply isn’t current-limiting.”</li><li>“I’d swap one thing at a time so I know which change fixed it.”</li><li>“Then I’d document repro steps, versions and readings in the bug.”</li></ul>`]];
 
 /* ---------- copy / save / share schematic images ---------- */

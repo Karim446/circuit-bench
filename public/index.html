@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Circuit Bench">
-<meta name="description" content="Circuit troubleshooting and Python practice for hardware test interviews.">
+<meta name="description" content="Circuit analysis and troubleshooting practice for electrical engineering interviews.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
 </head>
 <body>
 <header class="top"><div class="brand">Circuit Bench</div>
-<nav class="tabs" aria-label="Sections"><a href="#home" data-v="home">Home</a><a href="#practice" data-v="practice">Practice</a><a href="#interview" data-v="interview">Interview</a><a href="#learn" data-v="learn">Learn</a><a href="#cards" data-v="cards">Cards</a><a href="#python" data-v="python">Python</a><a href="#linux" data-v="linux">Linux</a><a href="#cheat" data-v="cheat">Cheatsheet</a><a href="#sim" data-v="sim">Simulator</a></nav><div class="hdr-tools"><button class="hbtn ico" id="palTog" title="Search everything (Ctrl+K or /)" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Search</span></button><button class="hbtn ico" id="themeTog" aria-label="Switch theme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Theme</span></button><button class="hbtn" id="syncTog" aria-expanded="false" aria-controls="syncp" title="Sync and offline"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10.5a4 4 0 0 0 .4-8 6 6 0 0 0-11.5 1.5A3.3 3.3 0 0 0 7 18z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Sync</span></button><button class="hbtn" id="wbTog" aria-expanded="false" aria-controls="wb" title="Whiteboard (W)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 7l3 3" stroke="currentColor" stroke-width="2"/></svg><span>Whiteboard</span></button><button class="hbtn" id="calcTog" aria-expanded="false" aria-controls="calc" title="Calculator (C)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 7h8M8.5 12h1M12 12h0M14.5 12h1M8.5 16h1M12 16h0M14.5 16h1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Calculator</span></button></div></header>
+<nav class="tabs" aria-label="Sections"><a href="#home" data-v="home">Home</a><a href="#practice" data-v="practice">Practice</a><a href="#interview" data-v="interview">Interview</a><a href="#learn" data-v="learn">Learn</a><a href="#cards" data-v="cards">Cards</a><a href="#cheat" data-v="cheat">Cheatsheet</a><a href="#sim" data-v="sim">Simulator</a></nav><div class="hdr-tools"><button class="hbtn ico" id="palTog" title="Search everything (Ctrl+K or /)" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Search</span></button><button class="hbtn ico" id="themeTog" aria-label="Switch theme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Theme</span></button><button class="hbtn" id="syncTog" aria-expanded="false" aria-controls="syncp" title="Sync and offline"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10.5a4 4 0 0 0 .4-8 6 6 0 0 0-11.5 1.5A3.3 3.3 0 0 0 7 18z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Sync</span></button><button class="hbtn" id="wbTog" aria-expanded="false" aria-controls="wb" title="Whiteboard (W)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 7l3 3" stroke="currentColor" stroke-width="2"/></svg><span>Whiteboard</span></button><button class="hbtn" id="calcTog" aria-expanded="false" aria-controls="calc" title="Calculator (C)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 7h8M8.5 12h1M12 12h0M14.5 12h1M8.5 16h1M12 16h0M14.5 16h1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Calculator</span></button></div></header>
 <aside class="calcp" id="calc" hidden aria-label="Calculator"></aside>
 <aside class="calcp" id="syncp" hidden aria-label="Sync and offline"></aside>
 <section class="wb" id="wb" hidden aria-label="Whiteboard"></section>
@@ -45,11 +45,9 @@
 <main><div class="score" id="score"></div><div id="card"></div></main>
 </div></section>
 <section class="view" id="v-learn"><div class="app"><aside><nav class="lnav" id="lnav"></nav></aside><main id="lesson" class="lesson"></main></div></section>
-<section class="view" id="v-python"><div class="app"><aside><nav class="lnav" id="pynav"></nav></aside><main id="pymain" class="lesson pylesson"></main></div></section>
-<section class="view" id="v-linux"><div class="app"><aside><nav class="lnav" id="shnav"></nav></aside><main id="shmain" class="lesson pylesson"></main></div></section>
 <section class="view" id="v-cheat"><div class="cheat" id="cheat"></div></section>
 <section class="view" id="v-sim"><div class="simwrap" id="simwrap"></div></section>
-<div class="pal" id="pal" hidden><div class="palbox" role="dialog" aria-label="Search"><input id="palIn" placeholder="Search lessons, formulas, topics, exercises…" autocomplete="off" spellcheck="false"><div id="palList"></div></div></div>
+<div class="pal" id="pal" hidden><div class="palbox" role="dialog" aria-label="Search"><input id="palIn" placeholder="Search lessons, formulas, topics, questions…" autocomplete="off" spellcheck="false"><div id="palList"></div></div></div>
 <div class="toast" id="toast" role="status"></div><div class="tip" id="tip"></div>
 <script src="js/core.js"></script>
 <script src="js/topics/dc.js"></script>
@@ -69,9 +67,7 @@
 <script src="js/lessons-interview.js"></script>
 <script src="js/cheatsheet.js"></script>
 <script src="js/calculator.js"></script>
-<script src="js/python.js"></script>
 <script src="js/whiteboard.js"></script>
-<script src="js/linux.js"></script>
 <script src="js/sim-transient.js"></script>
 <script src="js/content.js"></script>
 <script src="js/home.js"></script>

@@ -5,35 +5,44 @@ const txt=h=>{const d=document.createElement('div');d.innerHTML=h;return d.textC
 function dayMark(){const t=dayStr(),d=prefs.days||[];if(d[d.length-1]===t)return;prefs.days=[...new Set([...d,t])].slice(-200);store.set('bench.prefs',prefs);}
 function streak(){const set=new Set(prefs.days||[]);let n=0;const d=new Date();if(!set.has(dayStr(d)))d.setDate(d.getDate()-1);while(set.has(dayStr(d))){n++;d.setDate(d.getDate()-1);}return n;}
 function mastery(id){const st=stats[id];return st&&st.a?(st.c/st.a)*Math.min(1,st.a/8):0;}
-function readiness(){const circ=TOPICS.reduce((a,t)=>a+mastery(t.id),0)/TOPICS.length,py=(prefs.pySolved||[]).length/PYEX.length,sh=(prefs.shSolved||[]).length/SH_TASKS.length,ls=(prefs.done||[]).length/LESSONS.length,mk=(prefs.mocks||[]).slice(-3),mock=mk.length?mk.reduce((a,m)=>a+m.score/m.n,0)/mk.length:0;
- return{total:Math.round(100*(0.5*circ+0.15*mock+0.15*py+0.1*sh+0.1*ls)),circ,py,sh,ls,mock};}
+function readiness(){const circ=TOPICS.reduce((a,t)=>a+mastery(t.id),0)/TOPICS.length,mk=(prefs.mocks||[]).slice(-3),mock=mk.length?mk.reduce((a,m)=>a+m.score/m.n,0)/mk.length:0;
+ return{total:Math.round(100*(0.75*circ+0.25*mock)),circ,mock};}
 function practiceTopic(id){prefs.topics=[id];prefs.missMode=false;store.set('bench.prefs',prefs);renderSide();cur=null;location.hash='#practice';if(view==='practice')next();}
 /* ---------- home ---------- */
-function renderHome(){
+let homeHtml='';
+function renderHome(live){
  const R=readiness(),el=$('home'),tm=TOPICS.map(t=>({t,m:mastery(t.id),st:stats[t.id]||{a:0,c:0}})),weak=[...tm].sort((a,b)=>a.m-b.m||a.st.a-b.st.a),mocks=prefs.mocks||[],last=mocks[mocks.length-1],due=cardsDue().length,misses=missCount(),S=streak();
  const acts=[],w=weak[0];
- if(w)acts.push(w.st.a<3?{t:`Start ${w.t.name}`,d:'You haven’t practiced this yet. Read the lesson, then try a few.',href:'#learn/'+w.t.id,b:'Open lesson'}:{t:`Drill ${w.t.name}`,d:`Your weakest topic: ${w.st.c} of ${w.st.a} right on the first try.`,topic:w.t.id,b:'Practice'});
+ if(w)acts.push(w.st.a<3?{t:`Start ${w.t.name}`,d:w.st.a?`Only ${w.st.a} ${w.st.a===1?'try':'tries'} so far. Read the lesson, then do a few more.`:'You haven’t practiced this yet. Read the lesson, then try a few.',href:'#learn/'+w.t.id,b:'Open lesson'}:{t:`Drill ${w.t.name}`,d:`Your weakest topic: ${w.st.c} of ${w.st.a} right on the first try.`,topic:w.t.id,b:'Practice'});
  if(!last||Date.now()-last.d>3*864e5)acts.push({t:'Take a mock interview',d:last?'It’s been a few days since your last one.':'Ten mixed questions, timed, no hints. This is the best measure of where you stand.',href:'#interview/mock',b:'Start'});
  if(due)acts.push({t:`Review ${due} flashcard${due>1?'s':''}`,d:'Short recall reps keep formulas and definitions fresh.',href:'#cards',b:'Review'});
  if(misses)acts.push({t:`Revisit ${misses} missed question${misses>1?'s':''}`,d:'The same question types come back with new values until you get them right.',miss:1,b:'Revisit'});
  const unrated=EXPLAIN.find(x=>!(prefs.verbal||{})[x[0]]);if(unrated)acts.push({t:'Explain one out loud',d:txt(unrated[2]),href:'#interview/x/'+unrated[0],b:'Try it'});
  let cd='';if(prefs.idate){const n=Math.ceil((new Date(prefs.idate+'T00:00')-new Date(dayStr()+'T00:00'))/864e5);cd=n>1?`${n} days to go`:n===1?'Tomorrow':n===0?'Today. Good luck!':'Date has passed';}
  const days=[];for(let i=27;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(dayStr(d));}const dset=new Set(prefs.days||[]);
- const C=2*Math.PI*52,pct=v=>Math.round(v*100)+'%';
- el.innerHTML=`<div class="hgrid"><div class="hcard hring"><svg viewBox="0 0 140 140" role="img" aria-label="Readiness ${R.total} percent"><circle cx="70" cy="70" r="52" class="rg-bg"/><circle cx="70" cy="70" r="52" class="rg-fg" stroke-dasharray="${C*R.total/100} ${C}" transform="rotate(-90 70 70)"/><text x="70" y="68" class="rg-n">${R.total}</text><text x="70" y="90" class="rg-l">readiness</text></svg>
-  <p class="note" style="text-align:center;margin:6px 0 12px">Half from topic mastery; the rest from mock interviews, Python, Linux and lessons.</p>
-  <div class="hstat"><span><b>${S}</b> day streak</span><span><b>${(prefs.days||[]).length}</b> days practiced</span></div>
+ const C=2*Math.PI*52,pct=v=>Math.round(v*100)+'%',tries=TOPICS.reduce((a,t)=>a+((stats[t.id]||{}).a||0),0),right=TOPICS.reduce((a,t)=>a+((stats[t.id]||{}).c||0),0);
+ const html=`<div class="hgrid"><div class="hcard hring"><svg viewBox="0 0 140 140" role="img" aria-label="Readiness ${R.total} percent"><circle cx="70" cy="70" r="52" class="rg-bg"/><circle cx="70" cy="70" r="52" class="rg-fg" stroke-dasharray="${C*R.total/100} ${C}" transform="rotate(-90 70 70)"/><text x="70" y="68" class="rg-n">${R.total}</text><text x="70" y="90" class="rg-l">readiness</text></svg>
+  <p class="note" style="text-align:center;margin:6px 0 12px">Three quarters from topic mastery, one quarter from your last three mock interviews.</p>
+  <div class="hstat"><span><b>${S}</b> day streak</span><span><b>${(prefs.days||[]).length}</b> day${(prefs.days||[]).length===1?'':'s'} practiced</span></div>
   <div class="heat" aria-label="Last 28 days">${days.map(d=>`<i class="${dset.has(d)?'on':''}" title="${d}"></i>`).join('')}</div>
   <label class="hdate">Interview date <input type="date" id="idate" value="${prefs.idate||''}"></label>${cd?`<p class="hcd">${cd}</p>`:''}</div>
  <div class="hcard"><h3 class="hh">Do this next</h3><div class="acts">${acts.slice(0,4).map((a,i)=>`<div class="act"><div><b>${a.t}</b><p>${a.d}</p></div>${a.href?`<a class="btn${i?' ghost':''}" href="${a.href}">${a.b}</a>`:`<button class="btn${i?' ghost':''}" ${a.topic?`data-topic="${a.topic}"`:'data-miss="1"'}>${a.b}</button>`}</div>`).join('')}</div>
-  <div class="hmini"><a href="#python"><b>${(prefs.pySolved||[]).length}/${PYEX.length}</b>Python</a><a href="#linux"><b>${(prefs.shSolved||[]).length}/${SH_TASKS.length}</b>Linux tasks</a><a href="#learn"><b>${(prefs.done||[]).length}/${LESSONS.length}</b>Lessons</a><a href="#cards"><b>${cardsAll().filter(c=>((prefs.srs||{})[c.id]||[0])[0]>=3).length}/${cardsAll().length}</b>Cards learned</a><a href="#interview/mock"><b>${mocks.length?pct(last.score/last.n):'–'}</b>Last mock</a></div></div></div>
+  <div class="hmini"><a href="#practice"><b>${tries}</b>Questions tried</a><a href="#practice"><b>${tries?pct(right/tries):'–'}</b>Right first try</a><a href="#learn"><b>${(prefs.done||[]).length}/${LESSONS.length}</b>Lessons</a><a href="#cards"><b>${cardsAll().filter(c=>((prefs.srs||{})[c.id]||[0])[0]>=3).length}/${cardsAll().length}</b>Cards learned</a><a href="#interview/mock"><b>${mocks.length?pct(last.score/last.n):'–'}</b>Last mock</a></div>
+  <p class="note" style="margin:14px 0 0">Coding, C and firmware questions live in <a href="https://claude.ai/artifact/FKqcX3pmMQ4kCHR1uwmQja" target="_blank" rel="noopener">Daily Reps</a>. This site is circuits and hardware only.</p></div></div>
  <div class="hcard" style="margin-top:20px"><h3 class="hh">Topic mastery <span class="note" style="font-weight:400">weakest first · accuracy on the first try, discounted until you have 8 attempts</span></h3>
-  <div class="trows">${weak.map(x=>`<div class="trow"><span class="tn">${x.t.name}</span><span class="bar"><i style="width:${Math.round(x.m*100)}%"></i></span><span class="tp">${x.st.a?`${pct(x.st.c/x.st.a)} · ${x.st.a} tries`:'not started'}</span><a class="linkish" href="#learn/${x.t.id}">Lesson</a><button class="btn ghost sm" data-topic="${x.t.id}">Practice</button></div>`).join('')}</div></div>
+  <div class="trows">${weak.map(x=>`<div class="trow"><span class="tn">${x.t.name}</span><span class="bar"><i style="width:${Math.round(x.m*100)}%"></i></span><span class="tp">${x.st.a?`${pct(x.st.c/x.st.a)} · ${x.st.a} ${x.st.a===1?'try':'tries'}`:'not started'}</span><a class="linkish" href="#learn/${x.t.id}">Lesson</a><button class="btn ghost sm" data-topic="${x.t.id}">Practice</button></div>`).join('')}</div></div>
  ${mocks.length?`<div class="hcard" style="margin-top:20px"><h3 class="hh">Mock interviews</h3>${plot({w:900,h:180,x:[0.5,Math.max(5,mocks.length)+0.5],y:[0,105],xfmt:x=>Number.isInteger(x)?'#'+x:'',yfmt:y=>y+'%',series:[{pts:mocks.map((m,i)=>[i+1,100*m.score/m.n]),cls:'pl1'}],pts:mocks.map((m,i)=>({x:i+1,y:100*m.score/m.n})),xlabel:'attempt',ylabel:'score'})}</div>`:''}`;
+ if(live&&(html===homeHtml||document.activeElement===$('idate')))return;
+ homeHtml=html;el.innerHTML=html;
  $('idate').onchange=e=>{prefs.idate=e.target.value;store.set('bench.prefs',prefs);renderHome();};
  el.querySelectorAll('[data-topic]').forEach(b=>b.onclick=()=>practiceTopic(b.dataset.topic));
  el.querySelectorAll('[data-miss]').forEach(b=>b.onclick=()=>{prefs.missMode=true;store.set('bench.prefs',prefs);renderSide();cur=null;location.hash='#practice';});
- window.scrollTo({top:0});}
+ if(!live)window.scrollTo({top:0});}
+/* Keeps Home current without a reload: picks up progress made in another tab or on another device,
+   and rolls the streak, countdown and due cards over at midnight. */
+function homeRefresh(){if(view==='home'&&document.visibilityState!=='hidden')renderHome(true);}
+function homeLiveInit(){setInterval(homeRefresh,20000);document.addEventListener('visibilitychange',homeRefresh);window.addEventListener('focus',homeRefresh);
+ window.addEventListener('storage',e=>{if(e.key==='bench.stats')stats=store.get('bench.stats',{});else if(e.key==='bench.prefs')prefs=store.get('bench.prefs',prefs);else return;renderSide();homeRefresh();});}
 /* ---------- interview: mock + explain ---------- */
 const mock={on:false,qs:[],i:0,t0:0,limit:0,tick:null,result:null};
 function renderInterview(sub,id){
@@ -68,7 +77,7 @@ function mockAnswer(given,ok){const q=mock.qs[mock.i];q.given=given;q.ok=ok;mock
 function mockFinish(){if(!mock.on)return;mock.on=false;clearInterval(mock.tick);const secs=Math.min(mock.limit,Math.floor((Date.now()-mock.t0)/1000)),by={};let score=0;const M=stats.miss||(stats.miss={});
  mock.qs.forEach(q=>{const b=by[q.topic]||(by[q.topic]=[0,0]);b[1]++;const st=stats[q.topic]||(stats[q.topic]={a:0,c:0});st.a++;if(q.ok){score++;b[0]++;st.c++;}else M[q.key]=(M[q.key]||0)+1;});
  store.set('bench.stats',stats);prefs.mocks=[...(prefs.mocks||[]),{d:Date.now(),n:mock.qs.length,score,secs,by}].slice(-30);store.set('bench.prefs',prefs);dayMark();renderSide();mock.result={score,secs,by};if(view==='interview')mockResults();else toast('Time’s up: your mock interview has ended.');}
-function mockResults(){const r=mock.result,n=mock.qs.length,p=Math.round(100*r.score/n),ans=q=>q.answer.type==='num'?`${sig(q.answer.value,3)} ${q.answer.unit}`:txt(q.answer.options[q.answer.correct]);
+function mockResults(){const r=mock.result,n=mock.qs.length,p=Math.round(100*r.score/n),ans=q=>q.answer.type==='num'?`${showVal(q.answer.value)} ${q.answer.unit}`:txt(q.answer.options[q.answer.correct]);
  $('ivmain').innerHTML=`<div class="lesson" style="max-width:920px"><h2>Mock interview results</h2><div class="mk-score"><div><b>${r.score}/${n}</b><span>${p}%</span></div><p>${p>=85?'Strong. Keep the rhythm with a mock every few days.':p>=65?'Solid base. Work through the misses below, then drill those topics.':'Use this as a map: start with the topics at the top of the table.'}<br><span class="note">Time used: ${Math.floor(r.secs/60)}:${String(r.secs%60).padStart(2,'0')} of ${Math.floor(mock.limit/60)}:${String(mock.limit%60).padStart(2,'0')}</span></p></div>
  <h3>By topic</h3><table>${Object.entries(r.by).sort((a,b)=>a[1][0]/a[1][1]-b[1][0]/b[1][1]).map(([t,[c,a]])=>`<tr><td>${topicName(t)}</td><td><b>${c}/${a}</b></td><td><button class="btn ghost sm" data-topic="${t}">Practice</button> <a class="linkish" href="#learn/${t}">Lesson</a></td></tr>`).join('')}</table>
  <h3>Review</h3>${mock.qs.map((q,i)=>`<details class="mk-rev ${q.ok?'ok':'bad'}"><summary><span>${q.ok?'✓':'✗'}</span> ${i+1}. ${q.title} <small>${q.given===undefined?'not reached':'you: '+q.given}</small></summary><div class="prompt">${q.prompt}</div>${q.svg?`<div class="sheet mini">${fitSvgTag(q.svg)}</div>`:''}<div class="solution"><h4>Answer: ${ans(q)}</h4>${q.solution}<p class="angle"><b>Interview angle:</b> ${q.takeaway}</p></div></details>`).join('')}
@@ -107,13 +116,13 @@ function renderCardsNav(topic){const all=cardsAll(),S=prefs.srs||{},cnt=t=>cards
 /* ---------- search palette ---------- */
 let PAL=null,palSel=0,palList=[];
 function palItems(){if(PAL)return PAL;const it=[],add=(t,sub,go,body='')=>it.push({t,sub,go,k:(t+' '+sub).toLowerCase(),b:body.toLowerCase()}),goto=h=>()=>{location.hash=h;};
- [['Home','#home'],['Practice','#practice'],['Mock interview','#interview/mock'],['Learn','#learn'],['Flashcards','#cards'],['Python','#python'],['Linux shell','#linux'],['Cheatsheet','#cheat'],['Simulator','#sim']].forEach(([t,h])=>add(t,'Go to',goto(h)));
+ [['Home','#home'],['Practice','#practice'],['Mock interview','#interview/mock'],['Learn','#learn'],['Flashcards','#cards'],['Cheatsheet','#cheat'],['Simulator','#sim']].forEach(([t,h])=>add(t,'Go to',goto(h)));
  add('Calculator','Tool',()=>toggleCalc(true));add('Whiteboard','Tool',()=>toggleWB(true));add('Sync, offline and display size','Tool',()=>toggleSync(true));add('Switch theme (auto / light / dark)','Tool',cycleTheme);
  TOPICS.forEach(t=>add('Practice '+t.name,'Practice topic',()=>practiceTopic(t.id)));
  LESSONS.forEach(l=>{add(l.title,'Lesson',goto('#learn/'+l.id));l.sections.forEach(s=>{const h=txt(s.h);add(h,'Lesson · '+l.title,()=>{location.hash='#learn/'+l.id;setTimeout(()=>{const e=[...document.querySelectorAll('#lesson h3')].find(x=>x.textContent.trim()===h);if(e)e.scrollIntoView({block:'start'});},120);},txt(s.html));});});
  TOPICS.forEach(t=>(FORMULAS[t.id]||[]).forEach(f=>add(f,'Formula · '+t.name,goto('#learn/'+t.id))));
  CHEAT.forEach(c=>add(c[0],'Cheatsheet',()=>{location.hash='#cheat';setTimeout(()=>{const e=[...document.querySelectorAll('#cheat .ccard h3')].find(x=>x.textContent.trim()===txt(c[0]));if(e){e.scrollIntoView({block:'center'});e.parentElement.classList.add('flash');setTimeout(()=>e.parentElement.classList.remove('flash'),1500);}},120);},txt(c[1])));
- PYEX.forEach(e=>add(e.title,'Python exercise',goto('#python/'+e.id)));SH_TASKS.forEach(t=>add(t.title,'Linux task',goto('#linux/'+t.id)));EXPLAIN.forEach(x=>add(txt(x[2]),'Explain out loud',goto('#interview/x/'+x[0])));
+ EXPLAIN.forEach(x=>add(txt(x[2]),'Explain out loud',goto('#interview/x/'+x[0])));
  return PAL=it;}
 function palOpen(){const p=$('pal');p.hidden=false;const i=$('palIn');i.value='';palDraw();i.focus();}
 function palClose(){$('pal').hidden=true;}
@@ -125,7 +134,7 @@ function palRun(i){const x=palList[i];palClose();if(x)x.go();}
 function themeMode(){try{return localStorage.getItem('bench.theme')||'auto';}catch(e){return 'auto';}}
 function applyTheme(){const m=themeMode(),dark=m==='dark'||(m==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';const b=$('themeTog');if(b)b.title=`Theme: ${m}. Click to change`;if(typeof wb!=='undefined'&&wb.cv&&wb.w)wbRedraw();}
 function cycleTheme(){const m={auto:'light',light:'dark',dark:'auto'}[themeMode()];try{localStorage.setItem('bench.theme',m);}catch(e){}applyTheme();toast(`Theme: ${m==='auto'?'follows your device':m}`);}
-function v2Init(){applyTheme();try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);}catch(e){}
+function v2Init(){applyTheme();homeLiveInit();try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);}catch(e){}
  $('themeTog').onclick=cycleTheme;$('palTog').onclick=palOpen;$('palIn').oninput=()=>{palSel=0;palDraw();};
  $('palIn').onkeydown=e=>{if(e.key==='ArrowDown'){e.preventDefault();palSel=Math.min(palList.length-1,palSel+1);palDraw();}else if(e.key==='ArrowUp'){e.preventDefault();palSel=Math.max(0,palSel-1);palDraw();}else if(e.key==='Enter'){e.preventDefault();palRun(palSel);}else if(e.key==='Escape')palClose();};
  $('pal').onclick=e=>{if(e.target.id==='pal')palClose();};

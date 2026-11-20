@@ -7,6 +7,8 @@ function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor
 const E12=[1,1.2,1.5,1.8,2.2,2.7,3.3,3.9,4.7,5.6,6.8,8.2];
 function res(lo,hi){const o=[];for(let e=0;e<=6;e++)for(const m of E12){const v=+(m*10**e).toPrecision(3);if(v>=lo&&v<=hi)o.push(v);}return o.length?pick(o):nearE12((lo+hi)/2);}
 const sig=(x,n=3)=>+(+x).toPrecision(n);
+// Answers as shown to the user: whole numbers in full (ADC codes, register values), otherwise 3 significant figures.
+const showVal=v=>Number.isInteger(v)?v:sig(v,3);
 function eng(v,unit,n=3){if(!isFinite(v)||Math.abs(v)<1e-15)return `0 ${unit}`;const P={'-12':'p','-9':'n','-6':'µ','-3':'m','0':'','3':'k','6':'M','9':'G'};let e=Math.floor(Math.log10(Math.abs(v))/3)*3;e=Math.max(-12,Math.min(9,e));let m=sig(v/10**e,n);if(Math.abs(m)>=1000&&e<9){e+=3;m=sig(v/10**e,n);}return `${m} ${P[e]}${unit}`;}
 const ohm=v=>eng(v,'Ω');
 const f2=(v,d=2)=>String(+v.toFixed(d));
@@ -111,7 +113,9 @@ const FORMULAS={
  portfolio:['Threshold: Vs(trip) = Vz·(R1 + R2)/R2','TIA: Vout = I·Rf','Rise time ≈ 2.2·R·C; keep it a small fraction of the pulse high time','Pull-up range: Vcc/I_sink ≤ R ≤ tr(max)/(2.2·C)']};
 
 const G=[];
-function def(topic,kind,fn){G.push({topic,kind,fn});}
+// "A 8-bit ADC" → "An 8-bit ADC" when a generated number starts with a vowel sound.
+const aAn=t=>typeof t==='string'?t.replace(/\b([Aa]) (?=8|1[18](?!\d))/g,'$1n '):t;
+function def(topic,kind,fn){G.push({topic,kind,fn:()=>{const q=fn();if(q){q.prompt=aAn(q.prompt);q.solution=aAn(q.solution);}return q;}});}
 const LEDS=[{c:'red',vf:2.0},{c:'green',vf:2.2},{c:'yellow',vf:2.1},{c:'blue',vf:3.0},{c:'white',vf:3.1}];
 
 /* ---------- shared schematics ---------- */

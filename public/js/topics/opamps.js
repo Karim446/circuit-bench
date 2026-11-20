@@ -5,7 +5,7 @@ def('opamp','calc',()=>{
  const Vin=pick([-1,1])*sig(rnd(0.1,2),2),Rin=res(1000,22000),Rf=res(1000,100000),ideal=-Rf/Rin*Vin,Vo=clip(ideal),{s}=invSch(Rin,Rf,{vin:Vin});
  return{title:'Inverting amplifier',prompt:`<p>Vin = ${Vin} V. The op-amp runs on ±12 V and its output can swing rail to rail. What is Vout?</p>`,svg:s.svg(),answer:num(Vo,'V',{abs:0.05}),
  hints:['With negative feedback, the − input is held at the + input’s voltage: 0 V here (a virtual ground).',`So the input current is Vin/RIN, and all of it flows through RF. Gain = −RF/RIN = ${f2(-Rf/Rin,3)}.`,'Finally, check against the rails: the output can’t go past ±12 V.'],
- solution:`<p>Vout = −(${ohm(Rf)}/${ohm(Rin)}) × ${Vin} = ${f2(ideal)} V${Math.abs(ideal)>12?`, beyond the rails, so it <b>clips at ${Vo} V</b>.`:` = <b>${f2(Vo)} V</b>.`}</p>`,
+ solution:`<p>Vout = −(${ohm(Rf)}/${ohm(Rin)}) × (${Vin}) = ${Math.abs(ideal)>12?`${f2(ideal)} V, beyond the rails, so it <b>clips at ${Vo} V</b>.`:`<b>${f2(Vo)} V</b>.`}</p>`,
  takeaway:'Always finish with a rail check. “The math says 18 V but the supply is 12 V” is exactly what interviewers want you to catch.'};});
 
 def('opamp','calc',()=>{

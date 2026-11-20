@@ -1,7 +1,8 @@
 # Circuit Bench
 
 Interview practice for hardware / EE roles: generated circuit problems with hints, lessons,
-flashcards, mock interviews, a circuit simulator, a whiteboard, Python and Linux practice.
+flashcards, mock interviews, a circuit simulator, a calculator and a whiteboard. Circuits and
+hardware only: coding and firmware practice lives in a separate site (Daily Reps).
 Plain HTML, CSS and JavaScript. There is no build step: what is in `public/` is what gets served.
 
 ## Layout
@@ -18,13 +19,12 @@ Plain HTML, CSS and JavaScript. There is no build step: what is in `public/` is 
         content.js          extra cheat cards, flashcards, explain-out-loud prompts
         sim-dc.js           netlist extraction + DC solver      sim-transient.js  transient analysis
         widgets.js          plots and interactive lesson widgets
-        calculator.js  python.js  whiteboard.js  linux.js       the side tools and practice tabs
-        home.js             home, interview/mock, cards, search palette, theme
+        calculator.js  whiteboard.js                            the side tools
+        home.js             home (refreshes itself live), interview/mock, cards, search palette, theme
         app.js              storage, practice flow, Ask Claude, learn/cheat/sim screens, router
         sync.js             cross-device sync, offline status, UI scale, init()
         main.js             calls init() (must stay last)
       sw.js                 offline support (reads the file list from index.html)
-      py-worker.js          runs Python (Pyodide) off the main thread
     functions/api/sync.js   the sync API (Cloudflare Pages Function + D1)
     tests/smoke.js          runs every question generator without a browser
     wrangler.toml           Cloudflare config (project name, D1 binding)

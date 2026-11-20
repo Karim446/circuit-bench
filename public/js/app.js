@@ -2,7 +2,7 @@
 /* ================= app ================= */
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}try{const sec=k==='bench.stats'?'stats':k==='bench.prefs'?'progress':null;if(sec&&typeof syncSt!=='undefined')syncTouch(sec);}catch(e){}}};
 let stats=store.get('bench.stats',{}),prefs=store.get('bench.prefs',{topics:TOPICS.map(t=>t.id),faultOnly:false,weak:false});
-(()=>{const known=prefs.known||['dc','diode','xstr','opamp','rc','digital','power','meas','portfolio'];TOPICS.forEach(t=>{if(!known.includes(t.id)){known.push(t.id);if(!prefs.topics.includes(t.id))prefs.topics.push(t.id);}});prefs.known=known;try{localStorage.setItem('bench.prefs',JSON.stringify(prefs));}catch(e){}})();
+(()=>{const known=prefs.known||['dc','diode','xstr','opamp','rc','digital','power','meas','portfolio'];TOPICS.forEach(t=>{if(!known.includes(t.id)){known.push(t.id);if(!prefs.topics.includes(t.id))prefs.topics.push(t.id);}});prefs.known=known;delete prefs.pySolved;delete prefs.shSolved;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith('bench.py.'))localStorage.removeItem(k);}}catch(e){}try{localStorage.setItem('bench.prefs',JSON.stringify(prefs));}catch(e){}})();
 G.forEach(g=>{g.key=g.topic+':'+G.filter(x=>x.topic===g.topic).indexOf(g);});
 const session={tried:0,first:0,streak:0};let cur=null,lastGen=null,view='practice';
 const $=id=>document.getElementById(id);
@@ -50,7 +50,7 @@ function showHint(){if(!cur||cur.done||cur.hintN>=cur.hints.length)return;const 
 function record(ok){if(cur.recorded)return;cur.recorded=true;const st=stats[cur.topic]||{a:0,c:0};st.a++;session.tried++;
  dayMark();const clean=ok&&!cur.usedHelp;if(clean){st.c++;session.first++;session.streak++;}else session.streak=0;
  const mk=G.find(g=>g.topic===cur.topic&&g===lastGen)?.key;if(mk){const M=stats.miss||(stats.miss={});if(!ok)M[mk]=(M[mk]||0)+1;else if(clean&&M[mk]){M[mk]--;if(!M[mk])delete M[mk];}}stats[cur.topic]=st;store.set('bench.stats',stats);renderScore();renderSide();}
-function fmtAns(a){return `${sig(a.value,3)} ${a.unit}`;}
+function fmtAns(a){return `${showVal(a.value)} ${a.unit}`;}
 function checkNum(){
  if(cur.done)return;const raw=$('ans').value.trim().replace(',','.').replace(/[^0-9eE+\-.]/g,'');const x=parseFloat(raw);
  if(raw===''||!isFinite(x)){$('err').textContent=`Enter a number in ${cur.answer.unit}.`;return;}
@@ -173,9 +173,10 @@ function hideFault(){const N=sim.sch.N,ex=extract(N),D=devices(N),base=simulate(
  toast('Couldn’t find a fault that changes this circuit noticeably.');}
 
 /* ---------- router ---------- */
-function route(){const h=(location.hash||'#home').slice(1).split('/'),V=['home','practice','interview','learn','cards','python','linux','cheat','sim'],v=V.includes(h[0])?h[0]:'home';view=v;document.title={home:'Home',practice:'Practice',interview:'Interview',learn:'Learn',cards:'Cards',python:'Python',linux:'Linux',cheat:'Cheatsheet',sim:'Simulator'}[v]+' · Circuit Bench';
+function route(){const h=(location.hash||'#home').slice(1).split('/'),V=['home','practice','interview','learn','cards','cheat','sim'],v=V.includes(h[0])?h[0]:'home';view=v;document.title={home:'Home',practice:'Practice',interview:'Interview',learn:'Learn',cards:'Cards',cheat:'Cheatsheet',sim:'Simulator'}[v]+' · Circuit Bench';
  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));document.querySelectorAll('.tabs a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));$('tip').style.display='none';
  if(v==='home')renderHome();else if(v==='practice'){if(!cur)next();else requestAnimationFrame(()=>fitAll($('card')));}
  else if(v==='interview')renderInterview(h[1],h[2]);else if(v==='cards')renderCards(h[1]);
- else if(v==='learn')renderLearn(h[1]);else if(v==='python')renderPython(h[1]);else if(v==='linux')renderShell(h[1]);else if(v==='cheat')renderCheat();else renderSim();if(!$('calc').hidden)preview();
- const on=document.querySelector('.tabs a.on');if(on&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'nearest'});}
+ else if(v==='learn')renderLearn(h[1]);else if(v==='cheat')renderCheat();else renderSim();if(!$('calc').hidden)preview();
+ // keep the active tab visible in the (horizontally scrolling) tab bar without moving the page
+ const on=document.querySelector('.tabs a.on');if(on){const tb=on.parentElement,r=on.getBoundingClientRect(),t=tb.getBoundingClientRect();if(r.left<t.left||r.right>t.right)tb.scrollLeft+=r.left-t.left-(t.width-r.width)/2;}}

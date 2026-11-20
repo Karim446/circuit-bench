@@ -1,7 +1,7 @@
 // Cloudflare Pages Function: POST /api/sync
 // Stores one JSON document per sync id (a SHA-256 hash of the user's sync code) in D1.
 // Each section ({ts, data}) is merged last-write-wins by timestamp.
-const SECTIONS = new Set(["stats", "progress", "py", "wb"]);
+const SECTIONS = new Set(["stats", "progress", "wb"]);
 const MAX_BODY = 1_500_000;
 
 const json = (obj, status = 200) =>
@@ -63,7 +63,15 @@ export async function onRequestPost({ request, env }) {
       .bind(id, JSON.stringify(stored), Date.now())
       .run();
   }
-  return json({ sections: stored });
+  // Only send back the data for sections the device doesn't already have (it reports the
+  // newest timestamp it knows per section), so a routine check stays small.
+  const have = body.have && typeof body.have === "object" ? body.have : null;
+  const out = {};
+  for (const [key, val] of Object.entries(stored)) {
+    if (!SECTIONS.has(key)) continue;
+    out[key] = have && typeof have[key] === "number" && val.ts <= have[key] ? { ts: val.ts } : val;
+  }
+  return json({ sections: out });
 }
 
 export function onRequestGet() {

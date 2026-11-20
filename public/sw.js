@@ -1,7 +1,7 @@
-// Circuit Bench service worker: offline app shell + cached Python runtime and fonts.
-const SHELL = "bench-shell-v7";
-const RUNTIME = "bench-runtime";
-const SHELL_FILES = ["./", "./index.html", "./manifest.webmanifest", "./py-worker.js", "./icon-192.png", "./icon-512.png", "./icon-maskable.png"];
+// Circuit Bench service worker: offline copy of the site and its fonts.
+const SHELL = "bench-shell-v8";
+const RUNTIME = "bench-fonts";
+const SHELL_FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable.png"];
 
 // The list of CSS/JS files is read from index.html itself, so adding or renaming a
 // script there never needs a matching edit here.
@@ -67,8 +67,8 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Pyodide (Python runtime) and Google Fonts: cache first, they are versioned/immutable.
-  if (url.hostname === "cdn.jsdelivr.net" || url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
+  // Google Fonts: cache first, the files are versioned and never change.
+  if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
     e.respondWith(
       caches.open(RUNTIME).then((c) =>
         c.match(req).then((hit) => hit || fetch(req).then((res) => {
